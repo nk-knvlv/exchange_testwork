@@ -51,8 +51,7 @@
 
 В зависимости от типа сообщения (`messageType`) само сообщение (`message`) должно иметь конкретный формат:
 
-<details>
-<summary><b>SubscribeMarketData</b></summary>
+**SubscribeMarketData**
 
 **messageType**: 1
 
@@ -77,28 +76,29 @@
     {"reason": <string>}
 
 Чтобы отменить подписку, нужно отправить сообщение UnsubscribeMarketData.
-</details>
-<details>    
-    <summary><b>UnsubscribeMarketData</b></summary>
-</details>
-<details>    
-    <summary><b>PlaceOrder</b></summary>
-</details>
-<details>    
-    <summary><b>CancelOrder</b></summary>
-</details>
-<details>
-    <summary><b>SuccessInfo</b></summary>
-</details>
-<details>    
-    <summary><b>ErrorInfo</b></summary>
-</details>
-<details>    
-    <summary><b>ExecutionReport</b></summary>
-</details>
-<details>    
-    <summary><b>MarketDataUpdate</b></summary>
-</details>
+
+**UnsubscribeMarketData**
+...
+
+**PlaceOrder**
+...
+
+**CancelOrder**
+...
+
+**SuccessInfo**
+...
+
+**ErrorInfo**
+...
+
+**ExecutionReport**
+...
+
+**MarketDataUpdate**
+...
+
+
 
 ### Торговый терминал (клиент)
 Это web приложение, которое умеет подключаться к серверу по протоколу `websocket` и взаимодействовать с его [API](#api).
