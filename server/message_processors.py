@@ -16,24 +16,30 @@ async def subscribe_market_data_processor(
 ):
     from server.models import server_messages
     import json
-    user_address = websocket.client.host
-    # получаем список подключений клиента
+    import uuid
+    user_address = websocket.client.host  # тут должен быть user_id когда реализуем авторизацию TODO
+    instrument = str(message.instrument.value)
+
     with open('database_simulation.txt', 'r+') as database:
-        subscribes_json = database.read()
+        subscriptions_json = database.read()
+        uuid_hash_str = f"{user_address}-{instrument}"
+        subscription_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, uuid_hash_str))
 
         try:
-            subscribes = json.loads(subscribes_json)
-            if message.instrument.value not in subscribes[user_address]:
-                subscribes[user_address].append(message.instrument.value)
+            subscriptions = json.loads(subscriptions_json)
+
+            if subscription_id not in subscriptions[user_address]:
+                subscriptions[user_address][subscription_id] = instrument
         # если такой подписки нет, добавляем
         except json.decoder.JSONDecodeError:
-            subscribes: dict[str, list[str]] = {user_address: [message.instrument.value]}
+            subscriptions: dict[str, dict] = {user_address: {subscription_id: instrument}}
 
-        subscribes_json = json.dumps(subscribes)
+        subscriptions_json = json.dumps(subscriptions)
         database.truncate(0)
         database.seek(0)
-        database.write(subscribes_json)
-        return server_messages.SuccessInfo()
+        database.write(subscriptions_json)
+
+        return server_messages.SuccessInfo(message=str(subscription_id))
 
 
 async def unsubscribe_market_data_processor(
@@ -44,24 +50,26 @@ async def unsubscribe_market_data_processor(
     from server.models import server_messages
     import json
 
-    user_address = websocket.client.host
-    # получаем список подключений клиента
+    user_address = websocket.client.host  # тут должен быть user_id когда реализуем авторизацию TODO
+    subscription_id = str(message.subscription_id)
+
     with open('database_simulation.txt', 'r+') as database:
-        subscribes_json = database.read()
+        subscriptions_json = database.read()
 
         try:
-            subscribes = json.loads(subscribes_json)
-            if message.instrument.value not in subscribes[user_address]:
-                subscribes[user_address].append(message.instrument.value)
+            subscriptions = json.loads(subscriptions_json)
+
+            if subscription_id in subscriptions[user_address]:
+                del subscriptions[user_address][subscription_id]
         # если такой подписки нет, добавляем
         except json.decoder.JSONDecodeError:
-            subscribes: dict[str, list[str]] = {user_address: [message.instrument.value]}
-
-        subscribes_json = json.dumps(subscribes)
+            pass
+        subscriptions_json = json.dumps(subscriptions)
         database.truncate(0)
         database.seek(0)
-        database.write(subscribes_json)
-        return server_messages.SuccessInfo()
+        database.write(subscriptions_json)
+
+        return server_messages.SuccessInfo(message=str('Successfully unsubscribe'))
 
 
 async def place_order_processor(

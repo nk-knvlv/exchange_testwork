@@ -2,6 +2,7 @@
 
 .idea
 .webdevelopertestwork_venv
-_client
+__client
 client
 *.egg-info
+server/database_simulation.txt

@@ -19,7 +19,7 @@ class ErrorInfo(ServerMessage):
 
 
 class SuccessInfo(ServerMessage):
-    ...
+    message: str
 
 
 class ExecutionReport(ServerMessage):
