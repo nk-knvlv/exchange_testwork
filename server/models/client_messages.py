@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import decimal
+import sys
 import uuid
 from typing import TypeVar, TYPE_CHECKING
 
 import bidict as bidict
 import fastapi
 import pydantic
+
+sys.path.append("..") # Adds higher directory to python modules path.
 
 from server import message_processors, enums
 from server.models.base import Envelope, Message

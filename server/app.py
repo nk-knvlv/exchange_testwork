@@ -1,3 +1,4 @@
+import uvicorn
 import mimetypes
 import pathlib
 
@@ -7,10 +8,10 @@ import ntpro_server
 
 api = fastapi.FastAPI()
 server = ntpro_server.NTProServer()
-html = pathlib.Path('test.html').read_text()
+html = pathlib.Path('../client/index.html').read_text()
 
 
-@api.get('/')
+@api.get('/home')
 async def get():
     return fastapi.responses.HTMLResponse(html)
 
@@ -22,7 +23,7 @@ async def get(path: pathlib.Path):
     return fastapi.responses.PlainTextResponse(static_file, media_type=mime_type)
 
 
-@api.websocket('/ws/')
+@api.websocket('/ws')
 async def websocket_endpoint(websocket: fastapi.WebSocket):
     await server.connect(websocket)
 
@@ -30,3 +31,7 @@ async def websocket_endpoint(websocket: fastapi.WebSocket):
         await server.serve(websocket)
     except fastapi.WebSocketDisconnect:
         server.disconnect(websocket)
+
+
+if __name__ == "__main__":
+    uvicorn.run(api, host="0.0.0.0", port=8000)

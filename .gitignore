@@ -1,7 +1,7 @@
 /node_modules
 
-.idea/misc.xml
-.idea/vcs.xml
-.idea/workspace.xml
-
+.idea
+.webdevelopertestwork_venv
+_client
+client
 *.egg-info
