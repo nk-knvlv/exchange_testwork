@@ -1,1 +1,1 @@
-{"users": {"127.0.0.1": {}}, "order_book": {}}
+{"users": {"127.0.0.1": {}}, "order_book": {"8b5d592b-bbe5-4524-b48b-4737554267ac": {"instrument": "Instrument.eur_rub", "side": "1", "amount": "10", "price": "87"}, "8fe76230-995f-4897-bc66-77c38f36ee3c": {"instrument": "Instrument.eur_rub", "side": "1", "amount": "10", "price": "87"}}}

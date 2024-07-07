@@ -26,6 +26,11 @@ class ExecutionReport(ServerMessage):
     order_id: uuid.UUID
     order_status: enums.OrderStatus
 
+    def dict(self, *args, **kwargs):
+        values = super().dict(*args, **kwargs)
+        values['order_id'] = str(values['order_id'])  # Преобразование uuid в строку
+        return values
+
 
 class MarketDataUpdate(ServerMessage):
     subscription_id: uuid.UUID

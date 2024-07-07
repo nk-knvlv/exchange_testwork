@@ -51,6 +51,7 @@ class Exchange:
     async def execute_order(self, order_id: str):
         from server.models import server_messages
         from asyncio import sleep
+        import random
         import enums
 
         await sleep(10)
@@ -59,7 +60,7 @@ class Exchange:
             if self.websocket:
                 await self.server.send(
                     server_messages.ExecutionReport(
-                        order_id=order_id, order_status=enums.OrderStatus.filled
+                        order_id=order_id, order_status=random.randint(1, 4)
                     ),
                     self.websocket
                 )

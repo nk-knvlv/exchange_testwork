@@ -1,8 +1,8 @@
 /node_modules
+server/database_simulation.txt
 
 .idea
 .webdevelopertestwork_venv
 __client
 client
 *.egg-info
-server/database_simulation.txt
