@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import uuid
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -20,26 +22,33 @@ async def subscribe_market_data_processor(
     user_address = websocket.client.host  # тут должен быть user_id когда реализуем авторизацию TODO
     instrument = str(message.instrument.value)
 
-    with open('database_simulation.txt', 'r+') as database:
-        subscriptions_json = database.read()
+    with open('database_simulation.txt', 'r+') as database_obj:
+        database_json = database_obj.read()
         uuid_hash_str = f"{user_address}-{instrument}"
         subscription_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, uuid_hash_str))
-
         try:
-            subscriptions = json.loads(subscriptions_json)
+            database = json.loads(database_json)
+            # после реализации авторизации появится проверка на пользователя TODO
 
-            if subscription_id not in subscriptions[user_address]:
-                subscriptions[user_address][subscription_id] = instrument
-        # если такой подписки нет, добавляем
+            if user_address not in database['users']:
+                database['users'][user_address] = {
+                    subscription_id: instrument
+                }
+                result_message = server_messages.SuccessInfo(message=str(subscription_id))
+            else:
+                if subscription_id in database['users'][user_address]:
+                    return server_messages.ErrorInfo(reason='Subscription already exists')
+                else:
+                    database['users'][user_address][subscription_id] = instrument
+
+            database_json = json.dumps(database)
+            database_obj.truncate(0)
+            database_obj.seek(0)
+            database_obj.write(database_json)
         except json.decoder.JSONDecodeError:
-            subscriptions: dict[str, dict] = {user_address: {subscription_id: instrument}}
+            result_message = server_messages.ErrorInfo(reason='DB error')
 
-        subscriptions_json = json.dumps(subscriptions)
-        database.truncate(0)
-        database.seek(0)
-        database.write(subscriptions_json)
-
-        return server_messages.SuccessInfo(message=str(subscription_id))
+    return result_message
 
 
 async def unsubscribe_market_data_processor(
@@ -52,24 +61,28 @@ async def unsubscribe_market_data_processor(
 
     user_address = websocket.client.host  # тут должен быть user_id когда реализуем авторизацию TODO
     subscription_id = str(message.subscription_id)
-
-    with open('database_simulation.txt', 'r+') as database:
-        subscriptions_json = database.read()
+    with open('database_simulation.txt', 'r+') as database_obj:
+        database_json = database_obj.read()
 
         try:
-            subscriptions = json.loads(subscriptions_json)
+            database = json.loads(database_json)
 
-            if subscription_id in subscriptions[user_address]:
-                del subscriptions[user_address][subscription_id]
-        # если такой подписки нет, добавляем
+            if user_address in database['users']:
+                if subscription_id not in database['users'][user_address]:
+                    result_message = server_messages.ErrorInfo(reason='The subscription does not exist')
+                else:
+                    del database['users'][user_address][subscription_id]
+                    database_json = json.dumps(database)
+                    database_obj.truncate(0)
+                    database_obj.seek(0)
+                    database_obj.write(database_json)
+                    result_message = server_messages.SuccessInfo(message='Successfully unsubscribe')
+            else:
+                result_message = server_messages.ErrorInfo(reason="User doesn't exist")
         except json.decoder.JSONDecodeError:
-            pass
-        subscriptions_json = json.dumps(subscriptions)
-        database.truncate(0)
-        database.seek(0)
-        database.write(subscriptions_json)
+            result_message = server_messages.ErrorInfo(reason='DB error')
 
-        return server_messages.SuccessInfo(message=str('Successfully unsubscribe'))
+    return result_message
 
 
 async def place_order_processor(
@@ -78,7 +91,15 @@ async def place_order_processor(
         message: client_messages.PlaceOrder,
 ):
     from server.models import server_messages
-
-    # TODO ...
-
-    return server_messages.SuccessInfo()
+    instrument = message.instrument
+    side = message.side
+    price = message.price
+    amount = message.amount
+    all_tasks = asyncio.all_tasks()
+    place_order_result = await server.exchange.place_order(instrument=instrument, side=side, amount=amount, price=price)
+    if place_order_result:
+        order_id = place_order_result
+        task = asyncio.create_task(server.exchange.execute_order(order_id))
+        return server_messages.SuccessInfo(message=f'Order successfully placed.')
+    else:
+        return server_messages.ErrorInfo(reason="Can't place order")

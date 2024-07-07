@@ -5,6 +5,7 @@ import pathlib
 import fastapi
 
 import ntpro_server
+import exchange
 
 api = fastapi.FastAPI()
 server = ntpro_server.NTProServer()
