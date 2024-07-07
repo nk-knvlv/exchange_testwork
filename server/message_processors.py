@@ -95,11 +95,22 @@ async def place_order_processor(
     side = message.side
     price = message.price
     amount = message.amount
-    all_tasks = asyncio.all_tasks()
     place_order_result = await server.exchange.place_order(instrument=instrument, side=side, amount=amount, price=price)
     if place_order_result:
-        order_id = place_order_result
-        task = asyncio.create_task(server.exchange.execute_order(order_id))
-        return server_messages.SuccessInfo(message=f'Order successfully placed.')
+        return server_messages.SuccessInfo(message=f'Order successfully placed. Order_id: {str(place_order_result)}')
     else:
-        return server_messages.ErrorInfo(reason="Can't place order")
+        return server_messages.ErrorInfo(reason="DB error")
+
+
+async def cancel_order_processor(
+        server: NTProServer,
+        websocket: fastapi.WebSocket,
+        message: client_messages.PlaceOrder,
+):
+    from server.models import server_messages
+    order_id = message.order_id
+    cancel_order_result = await server.exchange.cancel_order(order_id=order_id)
+    if cancel_order_result:
+        return server_messages.SuccessInfo(message=f'Order with {str(order_id)} id successfully canceled.')
+    else:
+        return server_messages.ErrorInfo(reason="Can't cancel order")
