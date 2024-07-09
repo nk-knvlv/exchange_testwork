@@ -5,10 +5,11 @@ import pathlib
 import fastapi
 
 import ntpro_server
-import exchange
 
 api = fastapi.FastAPI()
 server = ntpro_server.NTProServer()
+server.exchange.run_exchange(server)
+
 html = pathlib.Path('../client/index.html').read_text()
 
 

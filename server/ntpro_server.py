@@ -9,16 +9,14 @@ from exchange import Exchange
 class NTProServer:
     def __init__(self):
         self.connections: dict[starlette.datastructures.Address, base.Connection] = {}
-        self.exchange = Exchange(self)
+        self.exchange = Exchange()
 
     async def connect(self, websocket: fastapi.WebSocket):
         await websocket.accept()
         self.connections[websocket.client] = base.Connection()
-        self.exchange.websocket = websocket
 
     def disconnect(self, websocket: fastapi.WebSocket):
         self.connections.pop(websocket.client)
-        self.exchange.websocket = None
 
     async def serve(self, websocket: fastapi.WebSocket):
         while True:

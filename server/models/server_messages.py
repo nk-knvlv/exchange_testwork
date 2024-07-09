@@ -26,6 +26,7 @@ class ExecutionReport(ServerMessage):
     order_id: uuid.UUID
     order_status: enums.OrderStatus
 
+    # выдает ошибку при парсинге uuid в json
     def dict(self, *args, **kwargs):
         values = super().dict(*args, **kwargs)
         values['order_id'] = str(values['order_id'])  # Преобразование uuid в строку
@@ -36,6 +37,14 @@ class MarketDataUpdate(ServerMessage):
     subscription_id: uuid.UUID
     instrument: enums.Instrument
     quotes: list[Quote]
+
+    def dict(self, *args, **kwargs):
+        values = super().dict(*args, **kwargs)
+        values['subscription_id'] = str(values['subscription_id'])  # Преобразование uuid в строку
+        for quote in values['quotes']:
+            for key, value in quote.items():
+                quote[key] = str(value)
+        return values
 
 
 class ServerEnvelope(Envelope):

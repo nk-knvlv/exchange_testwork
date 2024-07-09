@@ -44,7 +44,7 @@ class Connection(pydantic.BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    subscriptions: list[asyncio.Task] = []
+    subscriptions: dict[str, str] = {}
 
 
 class Quote(pydantic.BaseModel):
