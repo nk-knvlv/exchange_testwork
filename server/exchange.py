@@ -87,6 +87,8 @@ class Exchange:
             websocket
     ):
         from asyncio import create_task
+        if instrument not in enums.Instrument:
+            raise self.ExchangeException('DB error')
         with open('database_simulation.txt', 'r+') as database_obj:
             database_json = database_obj.read()
 
@@ -208,18 +210,42 @@ class Exchange:
 
     def get_instruments(self):
         instruments = {}
+        quotes = self.get_quotes()
 
-        instrument_tickers = {instrument.value for instrument in enums.Instrument.__members__.values()}
+        for ticker in enums.Instrument.__members__.values():
+            subscription = self.Subscription(self.server)
+            instrument = self.Instrument(ticker=ticker, quotes=quotes[ticker],
+                                         subscription=subscription)
+            instruments[ticker] = instrument
 
-        try:
-            with open('database_simulation.txt', 'r+') as database_obj:
-                database_json = database_obj.read()
-                database = json.loads(database_json)
-                for ticker in instrument_tickers:
-                    subscription = self.Subscription(self.server)
-                    instrument = self.Instrument(ticker=ticker, quotes=database['quotes'][ticker],
-                                                 subscription=subscription)
-                    instruments[ticker] = instrument
-        except (json.decoder.JSONDecodeError, FileNotFoundError):
-            raise self.ExchangeException("DB error")
         return instruments
+
+    @staticmethod
+    def get_quotes():
+        quotes = {
+            "EUR/RUB": [
+                {
+                    "bid": 95.5,
+                    "offer": 95.55,
+                    "min_amount": 10,
+                    "max_amount": 10000
+                }
+            ],
+            "EUR/USD": [
+                {
+                    "bid": 95.5,
+                    "offer": 95.55,
+                    "min_amount": 10,
+                    "max_amount": 10000
+                }
+            ],
+            "USD/RUB": [
+                {
+                    "bid": 95.5,
+                    "offer": 95.55,
+                    "min_amount": 10,
+                    "max_amount": 10000
+                }
+            ]
+        }
+        return quotes

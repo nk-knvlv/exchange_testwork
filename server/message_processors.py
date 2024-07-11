@@ -78,10 +78,13 @@ async def place_order_processor(
             price=price,
             websocket=websocket
         )
-        result_message = server_messages.SuccessInfo(
-            message=f'Order successfully placed. Order_id: {str(place_order_result)}'
-        )
-    except server.exchange.ExchangeException as ex:
+        if place_order_result:
+            result_message = server_messages.SuccessInfo(
+                message=f'Order successfully placed. Order_id: {str(place_order_result)}'
+            )
+        else:
+            raise Exception("Can't place order")
+    except Exception as ex:
         result_message = server_messages.ErrorInfo(reason=(str(ex)))
 
     return result_message
@@ -99,3 +102,4 @@ async def cancel_order_processor(
         return server_messages.SuccessInfo(message=f'Order with {str(order_id)} id successfully canceled.')
     else:
         return server_messages.ErrorInfo(reason="Can't cancel order")
+
