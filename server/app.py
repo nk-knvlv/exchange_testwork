@@ -10,7 +10,7 @@ api = fastapi.FastAPI()
 server = ntpro_server.NTProServer()
 server.exchange.run_exchange(server)
 
-html = pathlib.Path('../client/index.html').read_text()
+html = pathlib.Path('../client/public/index.html').read_text()
 
 
 @api.get('/home')
